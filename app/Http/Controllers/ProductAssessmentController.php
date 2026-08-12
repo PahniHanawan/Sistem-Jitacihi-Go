@@ -40,7 +40,15 @@ class ProductAssessmentController extends Controller
             'entry_date' => 'required|date',
         ]);
 
-        $dataStatus = ($validated['initial_stock'] > 0 && $validated['units_sold'] >= 0) ? 'layak' : 'belum memadai';
+        $period = AssessmentPeriod::find($validated['period_id']);
+        
+        $entryDate = \Carbon\Carbon::parse($validated['entry_date']);
+        $endDate = \Carbon\Carbon::parse($period->end_date);
+        $observationDays = $entryDate->diffInDays($endDate);
+
+        $dataStatus = ($validated['initial_stock'] > 0 && $validated['units_sold'] >= 0 && $observationDays >= 60) 
+            ? 'layak' 
+            : 'belum memadai';
 
         ProductAssessment::updateOrCreate(
             [
