@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id('user_id');
-            $table->string('username', 50)->unique();
+            $table->string('username', 50)->nullable()->unique();
+            $table->string('email', 255)->unique();
             $table->string('password', 255);
             $table->foreignId('role_id')->constrained('roles', 'role_id')->onDelete('cascade');
             $table->string('full_name', 100);
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
-            $table->string('email', 255)->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
