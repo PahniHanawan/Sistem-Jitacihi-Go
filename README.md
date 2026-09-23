@@ -1,58 +1,97 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🍓 Jitanichi Go - Sistem Pendukung Keputusan (SPK)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Jitanichi Go** adalah aplikasi Sistem Pendukung Keputusan berbasis web yang dirancang khusus untuk toko Jitanichi Go guna merekomendasikan produk mana yang layak mendapatkan promosi (seperti Diskon, Buy 1 Get 1, dll) berdasarkan performa penjualan masa lalu.
 
-## About Laravel
+Aplikasi ini dibangun menggunakan algoritma **AHP (Analytical Hierarchy Process)** untuk pembobotan kriteria dan **SAW (Simple Additive Weighting)** untuk proses pemeringkatan produk.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## ✨ Fitur Utama
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. **Autentikasi Multi-Role**
+   - **Owner**: Memiliki akses penuh termasuk menetapkan bobot AHP, melihat hasil pemeringkatan, memberikan keputusan promosi akhir, dan mencetak laporan resmi.
+   - **Admin**: Bertugas mengelola data master (Produk, Kriteria, User) dan menginput data penjualan (Product Assessment) harian/bulanan untuk dievaluasi.
 
-## Learning Laravel
+2. **Manajemen Data Master**
+   - Kelola Data Produk (Kode, Nama, Harga Pokok, Harga Jual, Status).
+   - Kelola Data Kriteria Penilaian (Benefit / Cost).
+   - Kelola Periode Penilaian (Sistem proteksi: hanya bisa ada satu periode *aktif* pada satu waktu).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+3. **Smart Data Entry (Penilaian Produk)**
+   - Fitur cerdas yang otomatis menarik data *Sisa Stok*, *Harga Pokok*, dan *Harga Jual* dari periode sebelumnya (berdasarkan histori rekam jejak) untuk meminimalisir kesalahan input admin (*Human Error*).
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+4. **Kalkulasi Cerdas (AHP & SAW)**
+   - Pembobotan dinamis menggunakan matriks perbandingan berpasangan (AHP) lengkap dengan fitur *Auto-fill* nilai referensi pakar.
+   - Pemeringkatan (SAW) transparan menampilkan matriks keputusan, matriks ternormalisasi, hingga hasil akhir (Nilai Preferensi $V_i$).
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+5. **Laporan & Cetak PDF**
+   - Rekapitulasi komprehensif yang menampilkan Bobot AHP, Ranking SAW, dan Keputusan Final Promosi Owner dalam satu halaman elegan yang siap cetak.
+   
+6. **UI/UX Modern & Interaktif**
+   - Dibangun dengan **Tailwind CSS** untuk tampilan *dashboard* yang memukau dan modern.
+   - Dilengkapi dengan **SweetAlert2** untuk setiap konfirmasi (hapus data, notifikasi sukses, dan *logout*).
 
-## Agentic Development
+---
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## 🛠️ Tech Stack
 
-```bash
-composer require laravel/boost --dev
+- **Framework:** Laravel 11 (PHP 8.2+)
+- **Database:** MySQL
+- **Frontend Styling:** Tailwind CSS
+- **Interactivity:** Alpine.js & SweetAlert2
+- **Icons:** Heroicons (SVG)
 
-php artisan boost:install
-```
+---
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## 🚀 Instalasi & Konfigurasi
 
-## Contributing
+Berikut langkah-langkah untuk menjalankan *project* ini secara lokal di komputer Anda:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/PahniHanawan/Sistem-Jitacihi-Go.git
+   cd Sistem-Jitacihi-Go
+   ```
 
-## Code of Conduct
+2. **Install Dependensi PHP & Node**
+   Pastikan Anda sudah menginstal Composer dan Node.js.
+   ```bash
+   composer install
+   npm install
+   npm run build
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+3. **Konfigurasi Environment**
+   Duplikat file `.env.example` menjadi `.env`, lalu sesuaikan koneksi database MySQL Anda.
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-## Security Vulnerabilities
+4. **Migrasi & Seeding Database**
+   Jalankan perintah ini untuk membangun struktur tabel dan mengisi data awal (termasuk akun Owner & Admin, Kriteria default, Produk, dan Histori Penilaian dummy untuk tes).
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+5. **Jalankan Server**
+   ```bash
+   php artisan serve
+   ```
+   Aplikasi sekarang dapat diakses melalui browser pada `http://127.0.0.1:8000`.
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🔐 Akses Login Default
+
+Setelah menjalankan langkah *seeding* di atas, Anda dapat masuk menggunakan akun percobaan berikut:
+
+| Peran | Email | Password |
+| --- | --- | --- |
+| **Owner** | owner@jitanichigo.com | password123 |
+| **Admin** | admin@jitanichigo.com | password123 |
+
+---
+
+## 📄 Lisensi
+Sistem Pendukung Keputusan ini dirancang khusus untuk menunjang operasional evaluasi promosi Toko Jitanichi Go.
