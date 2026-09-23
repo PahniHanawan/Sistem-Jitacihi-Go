@@ -31,6 +31,11 @@ class AssessmentPeriodController extends Controller
         return redirect()->route('periods.index')->with('success', 'Periode Penilaian berhasil ditambahkan.');
     }
 
+    public function edit(AssessmentPeriod $period)
+    {
+        return view('periods.edit', compact('period'));
+    }
+
     public function update(Request $request, AssessmentPeriod $period)
     {
         $validated = $request->validate([

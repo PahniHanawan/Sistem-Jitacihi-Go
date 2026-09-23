@@ -47,14 +47,14 @@ class ReportController extends Controller
             'period_id' => 'required|exists:assessment_periods,period_id',
         ]);
 
-        $activePeriod = AssessmentPeriod::findOrFail($request->period_id);
+        $period = AssessmentPeriod::findOrFail($request->period_id);
 
         $ahpResults = AhpResult::with('criterion')
-            ->where('period_id', $activePeriod->period_id)
+            ->where('period_id', $period->period_id)
             ->get();
 
         $rankings = RankingResult::with(['productAssessment.product', 'promotionDecision.decidedBy'])
-            ->where('period_id', $activePeriod->period_id)
+            ->where('period_id', $period->period_id)
             ->orderBy('rank', 'asc')
             ->get();
 
@@ -64,6 +64,6 @@ class ReportController extends Controller
             'file_path' => null,
         ]);
 
-        return view('reports.print', compact('activePeriod', 'ahpResults', 'rankings'));
+        return view('reports.print', compact('period', 'ahpResults', 'rankings'));
     }
 }

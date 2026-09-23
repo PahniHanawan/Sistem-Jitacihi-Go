@@ -11,5 +11,7 @@ class RoleSeeder extends Seeder
     {
         Role::firstOrCreate(['role_name' => 'owner']);
         Role::firstOrCreate(['role_name' => 'admin']);
+
+        $this->command->info('✅ Role berhasil di-seed (owner, admin)');
     }
 }

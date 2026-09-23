@@ -27,6 +27,17 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan.');
     }
 
+    public function show(Product $product)
+    {
+        $product->load(['productAssessments.period']);
+        return view('products.show', compact('product'));
+    }
+
+    public function edit(Product $product)
+    {
+        return view('products.edit', compact('product'));
+    }
+
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([

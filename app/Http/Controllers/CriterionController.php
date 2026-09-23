@@ -27,6 +27,11 @@ class CriterionController extends Controller
         return redirect()->route('criteria.index')->with('success', 'Kriteria berhasil ditambahkan.');
     }
 
+    public function edit(Criterion $criterion)
+    {
+        return view('criteria.edit', compact('criterion'));
+    }
+
     public function update(Request $request, Criterion $criterion)
     {
         $validated = $request->validate([

@@ -9,11 +9,12 @@ use Illuminate\Support\Facades\DB;
 
 class AhpService
 {
+    // ✅ RI TABLE untuk n=4 → RI = 0.90
     private array $riTable = [
-        1 => 0.0,
-        2 => 0.0,
+        1 => 0.00,
+        2 => 0.00,
         3 => 0.58,
-        4 => 0.90,
+        4 => 0.90,   // ✅ n=4 → RI = 0.90
         5 => 1.12,
         6 => 1.24,
         7 => 1.32,
@@ -23,17 +24,18 @@ class AhpService
     ];
 
     /**
-     * Compute AHP Weights and Consistency Ratio from Pairwise Comparison inputs.
-     *
-     * @param int $periodId
-     * @param array $comparisonValues  Format: ['critA_critB' => float_val, ...]
-     * @param int $userId
-     * @return array ['weights' => [...], 'lambda_max' => float, 'ci' => float, 'cr' => float, 'is_valid' => bool]
+     * Compute AHP Weights and Consistency Ratio
+     * ✅ 4 KRITERIA → 6 pasang perbandingan
      */
     public function calculateAndSave(int $periodId, array $comparisonValues, int $userId): array
     {
-        $criteria = Criterion::where('status', 'aktif')->orderBy('criterion_id')->get();
-        $n = $criteria->count();
+        // ✅ Ambil 4 kriteria aktif (C1-C4)
+        $criteria = Criterion::whereIn('criterion_code', ['C1', 'C2', 'C3', 'C4'])
+            ->where('status', 'aktif')
+            ->orderBy('criterion_id')
+            ->get();
+
+        $n = $criteria->count(); // ✅ n = 4
 
         if ($n === 0) {
             throw new \Exception('Tidak ada kriteria aktif untuk dihitung.');
@@ -42,7 +44,7 @@ class AhpService
         $criteriaIds = $criteria->pluck('criterion_id')->toArray();
         $matrix = [];
 
-        // 1. Inisialisasi Matriks A (1.0 untuk diagonal)
+        // 1. Inisialisasi Matriks A (diagonal = 1)
         foreach ($criteriaIds as $idA) {
             foreach ($criteriaIds as $idB) {
                 if ($idA === $idB) {
@@ -51,9 +53,8 @@ class AhpService
             }
         }
 
-        // 2. Isi nilai dari input user & simpan ke pairwise_comparisons
+        // 2. Isi nilai dari input user (6 pasang) & simpan ke pairwise_comparisons
         DB::transaction(function () use ($periodId, $criteriaIds, $comparisonValues, $userId, &$matrix) {
-            // Hapus perbandingan lama untuk periode ini
             PairwiseComparison::where('period_id', $periodId)->delete();
 
             for ($i = 0; $i < count($criteriaIds); $i++) {
@@ -127,7 +128,7 @@ class AhpService
         $cr = ($ri > 0) ? ($ci / $ri) : 0.0;
         $isValid = ($cr <= 0.10);
 
-        // 8. Simpan Hasil AHP ke tabel ahp_results
+        // 8. Simpan Hasil AHP
         DB::transaction(function () use ($periodId, $criteriaIds, $weights, $lambdaMax, $ci, $cr, $isValid) {
             AhpResult::where('period_id', $periodId)->delete();
 

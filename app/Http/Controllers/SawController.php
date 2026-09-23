@@ -25,7 +25,12 @@ class SawController extends Controller
         $selectedPeriodId = $request->get('period_id', optional($periods->firstWhere('status', 'aktif'))->period_id ?? optional($periods->first())->period_id);
 
         $activePeriod = $selectedPeriodId ? AssessmentPeriod::find($selectedPeriodId) : null;
-        $criteria = Criterion::where('status', 'aktif')->orderBy('criterion_code')->get();
+
+        // ✅ 4 KRITERIA (C1-C4)
+        $criteria = Criterion::whereIn('criterion_code', ['C1', 'C2', 'C3', 'C4'])
+            ->where('status', 'aktif')
+            ->orderBy('criterion_code')
+            ->get();
 
         $ahpResults = [];
         $rankings = collect();
@@ -69,7 +74,7 @@ class SawController extends Controller
             $result = $this->sawService->calculateAndSave((int) $request->period_id);
 
             return redirect()->route('saw.index', ['period_id' => $request->period_id])
-                ->with('success', "Perhitungan SAW selesai! Berhasil memeringkatkan {$result['count']} produk.");
+                ->with('success', "✅ Perhitungan SAW selesai! Berhasil memeringkatkan {$result['count']} produk.");
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

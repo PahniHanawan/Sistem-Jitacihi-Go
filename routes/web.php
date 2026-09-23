@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromotionDecisionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SawController;
+use App\Http\Controllers\UserController;
 use App\Models\AssessmentPeriod;
 use App\Models\Product;
 use App\Models\RankingResult;
@@ -40,11 +41,20 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // ✅ USER MANAGEMENT (OWNER ONLY)
+    Route::middleware(['role:owner'])->group(function () {
+        Route::resource('users', UserController::class)->except(['show']);
+        Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::patch('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+        Route::get('/users/{user}/edit-data', [UserController::class, 'editData'])->name('users.edit-data');
+    });
+
     // Master Data (Admin & Owner)
-    Route::resource('criteria', CriterionController::class)->except(['create', 'edit', 'show']);
-    Route::resource('products', ProductController::class)->except(['create', 'edit', 'show']);
-    Route::resource('periods', AssessmentPeriodController::class)->except(['create', 'edit', 'show']);
-    Route::resource('assessments', ProductAssessmentController::class)->only(['index', 'store', 'destroy']);
+    Route::resource('criteria', CriterionController::class)->except(['create', 'show']);
+    Route::resource('products', ProductController::class)->except(['create']);
+    Route::resource('periods', AssessmentPeriodController::class)->except(['create', 'show']);
+    Route::resource('assessments', ProductAssessmentController::class)
+    ->only(['index', 'store', 'show', 'edit', 'update', 'destroy']);
 
     // SAW Calculations (Admin & Owner)
     Route::get('/saw', [SawController::class, 'index'])->name('saw.index');
