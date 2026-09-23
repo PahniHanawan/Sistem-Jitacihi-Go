@@ -5,21 +5,28 @@ namespace Database\Seeders;
 use App\Models\Product;
 use App\Models\AssessmentPeriod;
 use App\Models\ProductAssessment;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
     public function run(): void
     {
+        // ================================================================
+        // 1. Buat Periode Penilaian
+        // ================================================================
         $period = AssessmentPeriod::firstOrCreate(
             ['period_name' => 'Periode 2025-2026'],
             [
                 'start_date' => '2025-11-01',
-                'end_date' => '2026-12-31',
+                'end_date' => '2026-07-31',
                 'status' => 'aktif'
             ]
         );
 
+        // ================================================================
+        // 2. Data Produk (15 Produk)
+        // ================================================================
         $rawData = [
             ['name' => 'Doll Fan Made', 'category' => 'Doll', 'sell' => 130000, 'cost' => 70000, 'initial' => 40, 'final' => 38, 'sold' => 2, 'date' => '2026-07-03'],
             ['name' => 'Album', 'category' => 'Album', 'sell' => 100000, 'cost' => 50000, 'initial' => 30, 'final' => 4, 'sold' => 26, 'date' => '2026-05-15'],
@@ -38,9 +45,13 @@ class ProductSeeder extends Seeder
             ['name' => 'NCT Zone', 'category' => 'Merchandise', 'sell' => 25000, 'cost' => 3000, 'initial' => 24, 'final' => 5, 'sold' => 19, 'date' => '2026-02-05'],
         ];
 
+        // ================================================================
+        // 3. Loop Data & Simpan ke Database
+        // ================================================================
         foreach ($rawData as $i => $data) {
             $productCode = 'PRD-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT);
-            $product = Product::firstOrCreate(
+
+            $product = Product::updateOrCreate(
                 ['product_code' => $productCode],
                 [
                     'product_name' => $data['name'],
@@ -48,6 +59,15 @@ class ProductSeeder extends Seeder
                     'status' => 'aktif'
                 ]
             );
+
+            // ✅ Hitung Usia Observasi
+            $entryDate = Carbon::parse($data['date']);
+            $endDate = Carbon::parse($period->end_date);
+            $observationDays = $entryDate->diffInDays($endDate);
+
+            // ✅ ✅ ✅ PERBAIKAN: Gunakan 'belum memadai' (DENGAN SPASI)
+            // Sesuai dengan ENUM di migration: ['layak', 'belum memadai']
+            $dataStatus = ($observationDays >= 60) ? 'layak' : 'belum memadai';
 
             ProductAssessment::updateOrCreate(
                 [
@@ -61,9 +81,21 @@ class ProductSeeder extends Seeder
                     'selling_price' => $data['sell'],
                     'cost_price' => $data['cost'],
                     'entry_date' => $data['date'],
-                    'data_status' => 'layak',
+                    'data_status' => $dataStatus, // ✅ 'layak' atau 'belum memadai'
                 ]
             );
         }
+
+        // ================================================================
+        // 4. Output ke Terminal
+        // ================================================================
+        $totalProducts = Product::count();
+        $layak = ProductAssessment::where('data_status', 'layak')->count();
+        $belum = ProductAssessment::where('data_status', 'belum memadai')->count();
+
+        $this->command->info("✅ Seeder selesai!");
+        $this->command->info("📦 Total produk: {$totalProducts}");
+        $this->command->info("✅ Layak: {$layak}");
+        $this->command->info("⏳ Belum Memadai: {$belum}");
     }
 }

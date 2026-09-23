@@ -16,15 +16,43 @@ class PromotionDecisionController extends Controller
 
         $activePeriod = $selectedPeriodId ? AssessmentPeriod::find($selectedPeriodId) : null;
 
+        // ================================================================
+        // FILTER & PAGINATION
+        // ================================================================
+        $perPage = $request->get('per_page', 10); // 5, 10, 25, 50, 100
+        $search = $request->get('search', '');
+        $rankFilter = $request->get('rank_filter', 'all'); // all, top5, top10, top20
+
         $rankings = collect();
         if ($activePeriod) {
-            $rankings = RankingResult::with(['productAssessment.product', 'promotionDecision.decidedBy'])
+            $query = RankingResult::with([
+                'productAssessment.product',
+                'promotionDecision.decidedBy'
+            ])
                 ->where('period_id', $activePeriod->period_id)
-                ->orderBy('rank', 'asc')
-                ->get();
+                ->orderBy('rank', 'asc');
+
+            // Filter berdasarkan ranking
+            if ($rankFilter === 'top5') {
+                $query->where('rank', '<=', 5);
+            } elseif ($rankFilter === 'top10') {
+                $query->where('rank', '<=', 10);
+            } elseif ($rankFilter === 'top20') {
+                $query->where('rank', '<=', 20);
+            }
+
+            // Filter pencarian (nama produk atau kode)
+            if (!empty($search)) {
+                $query->whereHas('productAssessment.product', function ($q) use ($search) {
+                    $q->where('product_name', 'LIKE', "%{$search}%")
+                        ->orWhere('product_code', 'LIKE', "%{$search}%");
+                });
+            }
+
+            $rankings = $query->paginate($perPage);
         }
 
-        return view('decisions.index', compact('periods', 'activePeriod', 'rankings'));
+        return view('decisions.index', compact('periods', 'activePeriod', 'rankings', 'search', 'rankFilter', 'perPage'));
     }
 
     public function store(Request $request)
@@ -32,7 +60,7 @@ class PromotionDecisionController extends Controller
         $validated = $request->validate([
             'ranking_id' => 'required|exists:ranking_results,ranking_id',
             'discount_type' => 'required|string|max:50',
-            'reason' => 'nullable|string',
+            'reason' => 'nullable|string|max:1000',
         ]);
 
         PromotionDecision::updateOrCreate(
@@ -45,6 +73,6 @@ class PromotionDecisionController extends Controller
             ]
         );
 
-        return redirect()->back()->with('success', 'Keputusan promosi/diskon berhasil disimpan.');
+        return redirect()->back()->with('success', '✅ Keputusan promosi/diskon berhasil disimpan.');
     }
 }
